@@ -3,6 +3,8 @@ import time
 
 import pygame
 import sys
+
+import wordlist
 from square import Square
 
 # Initialize Pygame
@@ -45,7 +47,7 @@ def main():
     this_word_index = 0
 
     # initialize squares
-    squares = [Square(x, y, "gray") for y in range(6) for x in range(5)]
+    squares = [Square(x, y, "blank") for y in range(6) for x in range(5)]
 
     # initialize small squares (the keyboard below)
     small_squares = []
@@ -90,19 +92,23 @@ def main():
                         if this_word_index == WORD_LEN:
 
                             first_index = current_try * WORD_LEN
-                            this_word_index = 0
-                            current_try += 1
+                            word = "".join([squares[i].letter for i in range(first_index, first_index + WORD_LEN)])
+                            print(word)
 
-                            # Send to the server for processing
-                            send_word("".join([squares[i].letter for i in range(first_index, first_index + WORD_LEN)]))
+                            if word in wordlist.allowed_words:
+                                this_word_index = 0
+                                current_try += 1
 
-                            # Paint the squares according to the received states
-                            states = receive_states()
-                            for i in range(WORD_LEN):
-                                this_square = squares[first_index + i]
-                                this_square.color = states[i]
+                                # Send to the server for processing
+                                send_word(word)
 
-                                small_squares_by_letter[this_square.letter].keep_max_color(states[i])
+                                # Paint the squares according to the received states
+                                states = receive_states()
+                                for i in range(WORD_LEN):
+                                    this_square = squares[first_index + i]
+                                    this_square.color = states[i]
+
+                                    small_squares_by_letter[this_square.letter].keep_max_color(states[i])
 
 
 
