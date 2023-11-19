@@ -14,14 +14,14 @@ pygame.init()
 WORD_LEN = 5
 font = pygame.font.Font(None, 36)  # You can adjust the font size
 
-WIDTH, HEIGHT = 600, 800
+WIDTH, HEIGHT = 600, 810
 FPS = 60
 
 SMALL_SQUARE_X_OFFSET = 80
-SMALL_SQUARE_Y_OFFSET = 550
+SMALL_SQUARE_Y_OFFSET = 580
 
 # Colors
-BLACK = (24, 20, 20)
+BLACK = (43, 43, 43)
 
 # Initialize screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -35,7 +35,6 @@ def send_word(word):
 
 def receive_states():
     res = [random.choice(("gray", "green", "yellow")) for i in range(WORD_LEN)]
-    print(res)
     return res
 
 
@@ -54,9 +53,9 @@ def main():
     small_squares.extend(
         [Square(x, 0, "blank", SMALL_SQUARE_X_OFFSET, SMALL_SQUARE_Y_OFFSET, 40, 60) for x in range(10)])
     small_squares.extend(
-        [Square(x, 1, "blank", SMALL_SQUARE_X_OFFSET + 20, SMALL_SQUARE_Y_OFFSET, 40, 60) for x in range(9)])
+        [Square(x, 1, "blank", SMALL_SQUARE_X_OFFSET + 20, SMALL_SQUARE_Y_OFFSET + 2, 40, 60) for x in range(9)])
     small_squares.extend(
-        [Square(x, 2, "blank", SMALL_SQUARE_X_OFFSET + 66, SMALL_SQUARE_Y_OFFSET, 40, 60) for x in range(7)])
+        [Square(x, 2, "blank", SMALL_SQUARE_X_OFFSET + 66, SMALL_SQUARE_Y_OFFSET + 4, 40, 60) for x in range(7)])
 
     # put a letter to every small square, and create a lookup dict
     small_squares_by_letter = {}
@@ -110,16 +109,15 @@ def main():
 
                                     small_squares_by_letter[this_square.letter].keep_max_color(states[i])
 
-
-
-
-
         # Clear the screen
         screen.fill(BLACK)
 
         # Draw squares
         for i in squares:
-            pygame.draw.rect(screen, i.rgb, i.pygame_object)
+            if i.color == "blank":
+                pygame.draw.rect(screen, i.rgb, i.pygame_object, width=1)
+            else:
+                pygame.draw.rect(screen, i.rgb, i.pygame_object)
 
             if i.letter:
                 text = font.render(i.letter, True, (255, 255, 255))  # White color
@@ -128,7 +126,7 @@ def main():
 
         # Draw small squares
         for i in small_squares:
-            pygame.draw.rect(screen, i.rgb, i.pygame_object)
+            pygame.draw.rect(screen, i.rgb, i.pygame_object, border_radius=3)
 
             if i.letter:
                 text = font.render(i.letter, True, (255, 255, 255))  # White color

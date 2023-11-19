@@ -13,11 +13,12 @@ class Square:
             "gray": (150, 150, 150)
         }
         """
+
         self.possible_colors = {
-            "gray": (96, 96, 96),
+            "gray": (80, 80, 80),
             "yellow": (193, 174, 95),
             "green": (84, 139, 76),
-            "blank": (150, 150, 150)
+            "blank": (120, 120, 120)
         }
 
 
