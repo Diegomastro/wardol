@@ -15,6 +15,9 @@ font = pygame.font.Font(None, 36)  # You can adjust the font size
 WIDTH, HEIGHT = 600, 800
 FPS = 60
 
+SMALL_SQUARE_X_OFFSET = 80
+SMALL_SQUARE_Y_OFFSET = 550
+
 # Colors
 BLACK = (24, 20, 20)
 
@@ -35,18 +38,31 @@ def receive_states():
 
 
 # Function to draw squares with different colors
-def draw_squares(color_sequence):
-    square_size = WIDTH // len(color_sequence)
-    for i, color in enumerate(color_sequence):
-        pygame.draw.rect(screen, color, (i * square_size, 0, square_size, HEIGHT))
 
 
-# Main game loop
 def main():
-    squares = [Square(x, y, "blank") for y in range(6) for x in range(5)]
     current_try = 0
     this_word_index = 0
 
+    # initialize squares
+    squares = [Square(x, y, "gray") for y in range(6) for x in range(5)]
+
+    # initialize small squares (the keyboard below)
+    small_squares = []
+    small_squares.extend(
+        [Square(x, 0, "blank", SMALL_SQUARE_X_OFFSET, SMALL_SQUARE_Y_OFFSET, 40, 60) for x in range(10)])
+    small_squares.extend(
+        [Square(x, 1, "blank", SMALL_SQUARE_X_OFFSET + 20, SMALL_SQUARE_Y_OFFSET, 40, 60) for x in range(9)])
+    small_squares.extend(
+        [Square(x, 2, "blank", SMALL_SQUARE_X_OFFSET + 66, SMALL_SQUARE_Y_OFFSET, 40, 60) for x in range(7)])
+
+    # put a letter to every small square, and create a lookup dict
+    small_squares_by_letter = {}
+    for sq, let in zip(small_squares, "QWERTYUIOPASDFGHJKLZXCVBNM"):
+        sq.letter = let
+        small_squares_by_letter[let] = sq
+
+    # game loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -55,7 +71,7 @@ def main():
 
             elif event.type == pygame.KEYDOWN:
 
-                if current_try < 6: # IF game isn't finished
+                if current_try < 6:  # IF game isn't finished
 
                     # if word isn't fully typed then type letter on the same row
                     if pygame.K_a <= event.key <= pygame.K_z:
@@ -72,20 +88,40 @@ def main():
                     # if word is fully typed then send it to the server
                     if event.key == pygame.K_RETURN:
                         if this_word_index == WORD_LEN:
+
                             first_index = current_try * WORD_LEN
-                            send_word("".join([squares[i].letter for i in range(first_index, first_index + WORD_LEN)]))
-                            states = receive_states()
                             this_word_index = 0
                             current_try += 1
 
+                            # Send to the server for processing
+                            send_word("".join([squares[i].letter for i in range(first_index, first_index + WORD_LEN)]))
+
+                            # Paint the squares according to the received states
+                            states = receive_states()
                             for i in range(WORD_LEN):
-                                squares[first_index + i].color = states[i]
+                                this_square = squares[first_index + i]
+                                this_square.color = states[i]
+
+                                small_squares_by_letter[this_square.letter].keep_max_color(states[i])
+
+
+
+
 
         # Clear the screen
         screen.fill(BLACK)
 
         # Draw squares
         for i in squares:
+            pygame.draw.rect(screen, i.rgb, i.pygame_object)
+
+            if i.letter:
+                text = font.render(i.letter, True, (255, 255, 255))  # White color
+                text_rect = text.get_rect(center=i.pygame_object.center)
+                screen.blit(text, text_rect)
+
+        # Draw small squares
+        for i in small_squares:
             pygame.draw.rect(screen, i.rgb, i.pygame_object)
 
             if i.letter:
@@ -101,7 +137,6 @@ def main():
         text_current_try = font.render(str(current_try), True, (255, 255, 255))  # White color
         text_rect = text_current_try.get_rect(center=(10, 50))
         screen.blit(text_current_try, text_rect)
-
 
         # Update the display
         pygame.display.flip()

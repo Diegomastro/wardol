@@ -3,29 +3,39 @@ import pygame
 
 class Square:
 
-    def __init__(self, xpos=0, ypos=0, color="gray", xoffset=60, yoffset=100, side_size=75):
+    def __init__(self, xpos=0, ypos=0, color="gray", xoffset=100, yoffset=40, width=75, height=75):
         # constants
+        """
         self.possible_colors = {
             "blank": (96, 96, 96),
             "yellow": (193, 174, 95),
             "green": (84, 139, 76),
             "gray": (150, 150, 150)
         }
+        """
+        self.possible_colors = {
+            "gray": (96, 96, 96),
+            "yellow": (193, 174, 95),
+            "green": (84, 139, 76),
+            "blank": (150, 150, 150)
+        }
+
 
         # vars
         self.color = color
-        self.side_size = side_size
+        self.width = width
+        self.height = height
         self.padding = 6
         self.rgb = self.possible_colors[self.color]
         self.xpos = xpos
         self.ypos = ypos
-        self.x = self.xpos * (self.side_size + self.padding) + self.side_size + xoffset
-        self.y = self.ypos * (self.side_size + self.padding) + self.side_size + yoffset
+        self.x = self.xpos * (self.width + self.padding) + xoffset
+        self.y = self.ypos * (self.height + self.padding) + yoffset
         self.letter = " "
 
     @property
     def pygame_object(self):
-        return pygame.Rect(self.x, self.y, self.side_size, self.side_size)
+        return pygame.Rect(self.x, self.y, self.width, self.height)
 
     @property
     def color(self):
@@ -37,3 +47,12 @@ class Square:
             raise ValueError(f"Invalid color, must be one of {self.possible_colors.keys()}")
         self.rgb = self.possible_colors[value]
         self._color = value
+
+    def keep_max_color(self, value):
+        color_values = {"blank": 0, "gray": 1, "yellow": 2, "green": 3}
+
+        new_color_number = max(color_values[self.color], color_values[value])
+
+        for color_name, color_number in color_values.items():
+            if new_color_number == color_number:
+                self.color = color_name
